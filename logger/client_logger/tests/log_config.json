@@ -1,0 +1,18 @@
+{
+  "log_config": {
+    "format": "%d | %t | %s | %m",
+    "files": {
+      "./debug": [
+        "DEBUG"
+      ],
+      "./errors": [
+        "WARNING",
+        "ERROR",
+        "CRITICAL"
+      ],
+      "console_stream": [
+        "INFORMATION"
+      ]
+    }
+  }
+}

@@ -7,8 +7,19 @@
 class client_logger final:
     public logger
 {
+    friend class client_logger_builder;
+
+private:
+    std::string _format_out;
+
+    std::map<std::string, std::pair<std::ostream *, std::set<logger::severity>>> _streams_local;
+
+    static std::map<std::string, std::pair<std::ofstream*, size_t>> _streams;//single
+
+    client_logger(std::map<std::string, std::set<logger::severity>> const &streams, std::string const &format);
 
 public:
+    void remove_reference(std::string const &key);
 
     client_logger(
         client_logger const &other);

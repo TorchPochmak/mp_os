@@ -2,28 +2,39 @@
 #define MATH_PRACTICE_AND_OPERATING_SYSTEMS_CLIENT_LOGGER_BUILDER_H
 
 #include <logger_builder.h>
+#include <map>
+#include <set>
+#include <iostream>
+#include <fstream>
+#include <client_logger.h>
+
+#define CONSOLE_STREAM "console_stream"
 
 class client_logger_builder final:
     public logger_builder
 {
+    std::string _format_out;
+    std::map<std::string, std::set<logger::severity>> _path_sevs;
 
 public:
 
     client_logger_builder();
 
-    client_logger_builder(
-        client_logger_builder const &other);
-
-    client_logger_builder &operator=(
-        client_logger_builder const &other);
+    client_logger_builder(std::string const& format);
 
     client_logger_builder(
-        client_logger_builder &&other) noexcept;
+        client_logger_builder const &other) = default;
 
     client_logger_builder &operator=(
-        client_logger_builder &&other) noexcept;
+        client_logger_builder const &other) = default;
 
-    ~client_logger_builder() noexcept override;
+    client_logger_builder(
+        client_logger_builder &&other) noexcept = default;
+
+    client_logger_builder &operator=(
+        client_logger_builder &&other) noexcept = default;
+
+    ~client_logger_builder() noexcept override = default;
 
 public:
 
