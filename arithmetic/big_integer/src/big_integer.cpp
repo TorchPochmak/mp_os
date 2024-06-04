@@ -3,50 +3,48 @@
 #include <vector>
 #include <limits>
 #include <optional>
-#include <algorithm>
-#include "big_integer.h"
-#define BASE_32 "4294967296"
-typedef unsigned int uint;
+#include <not_implemented.h>
 
-void big_integer::trivial_multiplication::multiply(
+#include "big_integer.h"
+#include <algorithm>
+#pragma region multiplication
+typedef unsigned int uint;
+big_integer &big_integer::trivial_multiplication::multiply(
         big_integer &first_multiplier,
         big_integer const &second_multiplier) const
 {
-    if (second_multiplier._oldest_digit == 0 && second_multiplier._other_digits == nullptr)
+    if (second_multiplier.is_equal_to_zero())
     {
-        first_multiplier = second_multiplier;
-        return;
+        return first_multiplier = second_multiplier;
     }
 
-    if (first_multiplier._oldest_digit == 0 && first_multiplier._other_digits == nullptr)
+    if (first_multiplier.is_equal_to_zero())
     {
-        return;
-    }
-    auto one = big_integer("1");
-    if (second_multiplier == one)
-    {
-        return;
+        return first_multiplier;
     }
 
-    if (first_multiplier == one)
+    if (second_multiplier.is_equal_to_one())
     {
-        first_multiplier = second_multiplier;
-        return;
+        return first_multiplier;
+    }
+
+    if (first_multiplier.is_equal_to_one())
+    {
+        return first_multiplier = second_multiplier;
     }
 
     if (first_multiplier.sign() == -1)
     {
-        first_multiplier.change_sign();
-        multiply(first_multiplier, second_multiplier);
-        first_multiplier.change_sign();
-        return;
+        return multiply(first_multiplier.change_sign(), second_multiplier).change_sign();
     }
 
     if (second_multiplier.sign() == -1)
     {
-        multiply(first_multiplier, second_multiplier);
-        first_multiplier.change_sign();
-        return;
+        return multiply(first_multiplier, -second_multiplier).change_sign();
+    }
+
+    if (second_multiplier._oldest_digit == -1 && second_multiplier._other_digits == nullptr) {
+        return (first_multiplier.change_sign());
     }
 
     auto first_value_digits_count = first_multiplier.get_digits_count();
@@ -97,7 +95,7 @@ void big_integer::trivial_multiplication::multiply(
         }
 
         if (operation_result) {
-            throw std::runtime_error("too much");
+            throw std::logic_error("too much digits probably");
         }
 
         ++pos_shift;
@@ -110,30 +108,51 @@ void big_integer::trivial_multiplication::multiply(
         result_digits[i] = (half_digits_res[2*i + 1] << shift) + half_digits_res[2*i];
     }
 
-    first_multiplier.remove_additional_zeroes(result_digits);
+    remove_additional_zeroes(result_digits);
 
     first_multiplier.clear();
-    first_multiplier.construct(result_digits, result_digits.size());
+    first_multiplier.initialize_from(result_digits, result_digits.size());
+
+    return first_multiplier;
 }
+
+big_integer &big_integer::Karatsuba_multiplication::multiply(
+        big_integer &first_multiplier,
+        big_integer const &second_multiplier) const
+{
+    throw not_implemented("big_integer &big_integer::Karatsuba_multiplication::multiply(big_integer &, big_integer const &)", "your code should be here...");
+}
+
+big_integer &big_integer::Schonhage_Strassen_multiplication::multiply(
+        big_integer &first_multiplier,
+        big_integer const &second_multiplier) const
+{
+    throw not_implemented("big_integer &big_integer::Schonhage_Strassen_multiplication::multiply(big_integer &, big_integer const &)", "your code should be here...");
+}
+
+#pragma endregion multiplication
+
+#pragma region division
+
 std::pair<std::optional<big_integer>, big_integer> big_integer::trivial_division::divide_with_remainder(
         big_integer const &dividend,
         big_integer const &divisor,
         bool eval_quotient,
         big_integer::multiplication_rule multiplication_rule) const
 {
-    if (divisor._oldest_digit == 0 && divisor._other_digits == nullptr)
+    if (divisor.is_equal_to_zero())
     {
         throw std::logic_error("attempt to divide by zero");
     }
 
-    if (dividend._oldest_digit == 0 && dividend._other_digits == nullptr)
+    if (dividend.is_equal_to_zero())
     {
-        return std::make_pair(std::optional(big_integer(0)), big_integer(0));
+        return std::make_pair(std::optional(big_integer(std::vector<int> {0})), big_integer(std::vector<int> {0}));
     }
 
     if (divisor._oldest_digit == 1 && divisor._other_digits == nullptr)
     {
-        return std::make_pair(std::optional(dividend), big_integer(0));
+        return std::make_pair(std::optional(dividend), big_integer(std::vector<int> {0}));
     }
 
     if (dividend.sign() == -1)
@@ -217,6 +236,7 @@ std::pair<std::optional<big_integer>, big_integer> big_integer::trivial_division
     return std::make_pair(std::optional<big_integer>(), minuend);
 }
 
+
 big_integer &big_integer::trivial_division::divide(
         big_integer &dividend,
         big_integer const &divisor,
@@ -233,13 +253,56 @@ big_integer &big_integer::trivial_division::modulo(
     return dividend = divide_with_remainder(dividend, divisor, true, multiplication_rule).second;
 }
 
-#pragma region useful_things
+big_integer &big_integer::Newton_division::divide(
+        big_integer &dividend,
+        big_integer const &divisor,
+        big_integer::multiplication_rule multiplication_rule) const
+{
+    throw not_implemented("big_integer &big_integer::Newton_division::divide(big_integer &, big_integer const &, big_integer::multiplication_rule)", "your code should be here...");
+}
+
+big_integer &big_integer::Newton_division::modulo(
+        big_integer &dividend,
+        big_integer const &divisor,
+        big_integer::multiplication_rule multiplication_rule) const
+{
+    throw not_implemented("big_integer &big_integer::Newton_division::modulo(big_integer &, big_integer const &, big_integer::multiplication_rule)", "your code should be here...");
+}
+
+big_integer &big_integer::Burnikel_Ziegler_division::divide(
+        big_integer &dividend,
+        big_integer const &divisor,
+        big_integer::multiplication_rule multiplication_rule) const
+{
+    throw not_implemented("big_integer &big_integer::Burnikel_Ziegler_division::divide(big_integer &, big_integer const &, big_integer::multiplication_rule)", "your code should be here...");
+}
+
+big_integer &big_integer::Burnikel_Ziegler_division::modulo(
+        big_integer &dividend,
+        big_integer const &divisor,
+        big_integer::multiplication_rule multiplication_rule) const
+{
+    throw not_implemented("big_integer &big_integer::Burnikel_Ziegler_division::modulo(big_integer &, big_integer const &, big_integer::multiplication_rule)", "your code should be here...");
+}
+
+#pragma endregion division
+
+void big_integer::move_from(
+        big_integer &&other)
+{
+    _oldest_digit = other._oldest_digit;
+    _other_digits = other._other_digits;
+    // _allocator = other._allocator;
+
+    other._oldest_digit = 0;
+    other._other_digits = nullptr;
+    // other._allocator = nullptr;
+}
 
 void big_integer::clear()
 {
-    deallocate_with_guard(_other_digits);
-    _allocator = nullptr;
     _oldest_digit = 0;
+    delete[] _other_digits;
     _other_digits = nullptr;
 }
 
@@ -248,28 +311,45 @@ void big_integer::copy_from(
 {
     _oldest_digit = other._oldest_digit;
     _other_digits = nullptr;
-    _allocator = other._allocator;
-
     if (other._other_digits == nullptr)
+    {
         return;
+    }
 
-    _other_digits = reinterpret_cast<unsigned int *>(allocate_with_guard(sizeof(unsigned int), other.get_digits_count()));
+    _other_digits = new unsigned int[*other._other_digits];
     std::memcpy(_other_digits, other._other_digits, sizeof(unsigned int) * (*other._other_digits));
 }
 
-void big_integer::move_from(
-        big_integer &&other)
+void big_integer::initialize_from(
+        int const *digits,
+        size_t digits_count)
 {
-    _oldest_digit = other._oldest_digit;
-    _other_digits = other._other_digits;
-    _allocator = other._allocator;
+    if (digits == nullptr)
+    {
+        throw std::logic_error("pointer to digits array must not be nullptr");
+    }
 
-    other._oldest_digit = 0;
-    other._other_digits = nullptr;
-    other._allocator = nullptr;
+    if (digits_count == 0)
+    {
+        throw std::logic_error("digits array length must  be GT 0");
+    }
+
+    _oldest_digit = digits[digits_count - 1];
+    _other_digits = (digits_count == 1
+                     ? nullptr
+                     : new unsigned int[digits_count]);
+
+    if (_other_digits == nullptr)
+    {
+        return;
+    }
+
+    *_other_digits = (unsigned int)digits_count;
+
+    std::memcpy(_other_digits + 1, digits, sizeof(unsigned int) * (digits_count - 1));
 }
 
-void big_integer::construct(
+void big_integer::initialize_from(
         std::vector<int> const &digits,
         size_t digits_count)
 {
@@ -277,15 +357,17 @@ void big_integer::construct(
 
     if (digits.empty() || digits_count == 0)
     {
-        throw std::runtime_error("vector input error");
+        throw std::logic_error("std::vector<int> of digits should not be empty");
     }
 
     _oldest_digit = digits[digits_count - 1];
 
     if (digits_count == 1)
+    {
         return;
+    }
 
-    _other_digits = reinterpret_cast<unsigned int *>(allocate_with_guard(sizeof(unsigned int), digits_count));
+    _other_digits = new unsigned int[digits_count];
     *_other_digits = digits_count;
 
     for (auto i = 0; i < digits_count - 1; ++i)
@@ -294,7 +376,7 @@ void big_integer::construct(
     }
 }
 
-void big_integer::construct_str(
+void big_integer::initialize_from(
         std::string const &value,
         size_t base)
 {
@@ -322,6 +404,13 @@ void big_integer::construct_str(
     if  (is_negative) {
         this->change_sign();
     }
+}
+
+void big_integer::initialize_from(
+        const int num)
+{
+    std::string st = std::to_string(num);
+    initialize_from(st, 10);
 }
 
 void big_integer::print_byte(
@@ -362,12 +451,22 @@ inline int big_integer::get_digits_count() const noexcept
 
 inline int big_integer::sign() const noexcept
 {
-    if (_oldest_digit == 0 && _other_digits == nullptr)
+    if (is_equal_to_zero())
     {
         return 0;
     }
 
     return 1 - (static_cast<int>((*reinterpret_cast<unsigned int const *>(&_oldest_digit) >> ((sizeof(int) << 3) - 1))) << 1);
+}
+
+inline bool big_integer::is_equal_to_zero() const noexcept
+{
+    return ((_oldest_digit << 1) == 0) && _other_digits == nullptr;
+}
+
+inline bool big_integer::is_equal_to_one() const noexcept
+{
+    return _oldest_digit == 1 && _other_digits == nullptr;
 }
 
 inline unsigned int big_integer::get_digit(
@@ -393,31 +492,35 @@ inline unsigned int big_integer::get_digit(
 
     return 0;
 }
-#pragma endregion useful_things
 
-#pragma region constructors
 big_integer::big_integer(
-        std::vector<int> const &digits,
-        allocator* allocator)
+        int const *digits,
+        size_t digits_count)
 {
-    mult = trivial_multiplication();
-    _allocator = allocator;
+    initialize_from(digits, digits_count);
+}
+
+big_integer::big_integer(
+        std::vector<int> const &digits)
+{
+    // TODO HAS BEEN COMPLETED
     std::vector<int> new_vec = digits;
     remove_additional_zeroes(new_vec);
-    construct(new_vec, new_vec.size());
+    initialize_from(new_vec, new_vec.size());
 }
 
 big_integer::big_integer(
         std::string const &value,
-        size_t base,
-        allocator* allocator)
+        size_t base)
 {
-    mult = trivial_multiplication();
-    _allocator = allocator;
-    construct_str(value, base);
+    initialize_from(value, base);
 }
 
-#pragma endregion constructors
+big_integer::big_integer(
+        const int num)
+{
+    initialize_from(num);
+}
 
 big_integer::big_integer(
         big_integer const &other)
@@ -460,17 +563,15 @@ big_integer::~big_integer()
     clear();
 }
 
-#pragma region opers
-
 big_integer &big_integer::operator+=(
         big_integer const &other)
 {
-    if (other._oldest_digit == 0 && other._other_digits == nullptr)
+    if (other.is_equal_to_zero())
     {
         return *this;
     }
 
-    if (_oldest_digit == 0 && _other_digits == nullptr)
+    if (is_equal_to_zero())
     {
         return *this = other;
     }
@@ -535,7 +636,7 @@ big_integer &big_integer::operator+=(
     remove_additional_zeroes(result_digits);
 
     clear();
-    construct(result_digits, result_digits.size());
+    initialize_from(result_digits, result_digits.size());
 
     return *this;
 }
@@ -549,12 +650,12 @@ big_integer big_integer::operator+(
 big_integer &big_integer::operator-=(
         big_integer const &other)
 {
-    if (other._oldest_digit == 0 && other._other_digits == nullptr)
+    if (other.is_equal_to_zero())
     {
         return *this;
     }
 
-    if (_oldest_digit == 0 && _other_digits == nullptr)
+    if (is_equal_to_zero())
     {
         return *this = -other;
     }
@@ -616,7 +717,7 @@ big_integer &big_integer::operator-=(
     remove_additional_zeroes(result_digits);
 
     clear();
-    construct(result_digits, result_digits.size());
+    initialize_from(result_digits, result_digits.size());
 
     return *this;
 }
@@ -632,14 +733,10 @@ big_integer big_integer::operator-() const
     return big_integer(*this).change_sign();
 }
 
-
-
 big_integer &big_integer::operator*=(
         big_integer const &other)
 {
-    //only trivial, заглушка
-    trivial_multiplication().multiply(*this, other);
-    return *this;
+    return trivial_multiplication().multiply(*this, other);
 }
 
 big_integer big_integer::operator*(
@@ -726,6 +823,37 @@ bool big_integer::operator<(
     return false;
 }
 
+// bool big_integer::operator<(
+//     big_integer const &other) const
+// {
+//     if (this->sign() == -1 && other.sign() == -1) {
+//         big_integer tmp1 = *this;
+//         big_integer tmp2 = other;
+//         tmp1.change_sign();
+//         tmp2.change_sign();
+//         return (tmp1 > tmp2);
+//     } // mb more effective?
+
+//     if (this->sign() == -1 || other.sign() == -1) {
+//         return (sign() == -1);
+//     }
+
+//     if (this->get_digits_count() != other.get_digits_count()) {
+//         return (this->get_digits_count() < other.get_digits_count());
+//     }
+
+//     for (int i = get_digits_count() - 1; i >= 0; i--) {
+//         int dig_from_this = this->get_digit(i);
+//         int dig_from_other = other.get_digit(i);
+
+//         if (dig_from_this != dig_from_other) {
+//             return (dig_from_this < dig_from_other);
+//         }
+//     }
+
+//     return false;
+// }
+
 bool big_integer::operator<=(
         big_integer const &other) const
 {
@@ -795,7 +923,7 @@ big_integer &big_integer::operator&=(
     remove_additional_zeroes(res);
 
     clear();
-    construct(res, res.size());
+    initialize_from(res, res.size());
 
     return *this;
 }
@@ -837,7 +965,7 @@ big_integer &big_integer::operator|=(
     remove_additional_zeroes(res);
 
     clear();
-    construct(res, res.size());
+    initialize_from(res, res.size());
 
     return *this;
 }
@@ -879,7 +1007,7 @@ big_integer &big_integer::operator^=(
     remove_additional_zeroes(res);
 
     clear();
-    construct(res, res.size());
+    initialize_from(res, res.size());
 
     return *this;
 }
@@ -893,7 +1021,7 @@ big_integer big_integer::operator^(
 big_integer &big_integer::operator<<=(
         size_t shift)
 {
-    if (_oldest_digit == 0 && _other_digits == nullptr || shift == 0)
+    if (is_equal_to_zero() || shift == 0)
     {
         return *this;
     }
@@ -945,7 +1073,7 @@ big_integer &big_integer::operator<<=(
     remove_additional_zeroes(result_digits);
 
     clear();
-    construct(result_digits, result_digits.size());
+    initialize_from(result_digits, result_digits.size());
 
     if (value_sign == -1)
     {
@@ -964,7 +1092,7 @@ big_integer big_integer::operator<<(
 big_integer &big_integer::operator>>=(
         size_t shift)
 {
-    if (_oldest_digit == 0 && _other_digits == nullptr || shift == 0)
+    if (is_equal_to_zero() || shift == 0)
     {
         return *this;
     }
@@ -1001,9 +1129,9 @@ big_integer &big_integer::operator>>=(
     unsigned int shift_help = sizeof(unsigned int) << 2;
     unsigned int mask_help = (1 << shift) - 1;
 
-    for (int i = 0; i < 2 * this->get_digits_count(); i+=2) {
-        half_digits[i] = this->get_digit(i) & mask_help;
-        half_digits[i+1] = this->get_digit(i) >> shift_help;
+    for (int i = 0; i < this->get_digits_count(); i++) {
+        half_digits[2*i] = this->get_digit(i) & mask_help;
+        half_digits[2*i+1] = this->get_digit(i) >> shift_help;
     }
 
     int ind = 0;
@@ -1037,7 +1165,7 @@ big_integer &big_integer::operator>>=(
     remove_additional_zeroes(result_digits);
 
     clear();
-    construct(result_digits, result_digits.size());
+    initialize_from(result_digits, result_digits.size());
 
     if (value_sign == -1)
     {
@@ -1071,12 +1199,10 @@ std::istream &operator>>(
     stream >> value_as_string;
 
     value.clear();
-    value.construct_str(value_as_string, 10);
+    value.initialize_from(value_as_string, 10);
 
     return stream;
 }
-
-#pragma endregion opers
 
 unsigned int big_integer::char_to_int(char c)
 {
@@ -1138,7 +1264,12 @@ void big_integer::remove_additional_zeroes(std::vector<int> &digits) {
 }
 
 std::string big_integer::to_string() const
-{std::string res;
+{
+
+    if (this->is_equal_to_zero()) {
+        return std::string("0");
+    }
+    std::string res;
     res.reserve(11 * get_digits_count());
 
     big_integer big_number(*this);
@@ -1152,20 +1283,13 @@ std::string big_integer::to_string() const
     int const big_modulus = 1e9;
 
     big_integer big_modulus_int_big_int(std::vector<int> {big_modulus});
-    if(this->_oldest_digit == 1 && this->_other_digits == nullptr)
-    {
-        return "1";
-    }
-    if(this->_oldest_digit == 0 && this->_other_digits == nullptr)
-    {
-        return "0";
-    }
-    while (!(big_number._oldest_digit == 0 && big_number._other_digits == nullptr))
+
+    while (!big_number.is_equal_to_zero())
     {
         auto [quotient, remainder] =  big_integer::divide_with_remainder(big_number, big_modulus_int_big_int, true);
 
         unsigned int tmp = remainder.get_digit(0);
-        for (size_t i = 0; i < big_modulus_zeros_cnt && (tmp || !(quotient.value()._oldest_digit == 0 && quotient.value()._other_digits == nullptr)); ++i)
+        for (size_t i = 0; i < big_modulus_zeros_cnt && (tmp || !quotient.value().is_equal_to_zero()); ++i)
         {
             res.push_back('0' + tmp % 10);
             tmp /= 10;
@@ -1174,7 +1298,7 @@ std::string big_integer::to_string() const
         big_number = quotient.value();
     }
 
-    if (this->_oldest_digit == 0 && this->_other_digits == nullptr)
+    if (is_equal_to_zero())
     {
         res.push_back('0');
     }
@@ -1195,12 +1319,12 @@ std::pair<std::optional<big_integer>, big_integer> big_integer::divide_with_rema
         big_integer const &divisor,
         bool eval_quotient) const
 {
-    if (divisor._oldest_digit == 1 && divisor._other_digits == nullptr)
+    if (divisor.is_equal_to_zero())
     {
         throw std::logic_error("attempt to divide by zero");
     }
 
-    if (dividend._oldest_digit == 1 && dividend._other_digits == nullptr)
+    if (dividend.is_equal_to_zero())
     {
         return std::make_pair(std::optional(big_integer(0)), big_integer(0));
     }
@@ -1289,9 +1413,4 @@ std::pair<std::optional<big_integer>, big_integer> big_integer::divide_with_rema
     }
 
     return std::make_pair(std::optional<big_integer>(), minuend);
-}
-
-[[nodiscard]] allocator *big_integer::get_allocator() const noexcept
-{
-    return _allocator;
 }
